@@ -1,0 +1,479 @@
+[root@ccmas Pod-design]# ll
+total 0
+[root@ccmas Pod-design]# kubectl run nginx1 --image=nginx --restart=Never --labels=app=v1
+pod/nginx1 created
+[root@ccmas Pod-design]# kubectl run nginx2 --image=nginx --restart=Never --labels=app=v1
+pod/nginx2 created
+[root@ccmas Pod-design]# kubectl run nginx3 --image=nginx --restart=Never --labels=app=v1
+pod/nginx3 created
+[root@ccmas Pod-design]# kubectl get pods;
+NAME                           READY   STATUS             RESTARTS   AGE
+hello-world-59b45bc5b9-45jgf   1/1     Terminating        2          12d
+hello-world-59b45bc5b9-95hbn   1/1     Terminating        1          12d
+hello-world-59b45bc5b9-m84qr   1/1     Running            3          12d
+hello-world-59b45bc5b9-mz4b4   1/1     Running            1          3d12h
+hello-world-59b45bc5b9-zsgl7   1/1     Running            1          3d
+multitool-64d55546dc-j7sh7     1/1     Running            4          13d
+mysql-v1-b8x84                 1/1     Running            1          3d
+mysql-v1-bjb4m                 1/1     Running            3          11d
+mysql-v1-hbz9g                 1/1     Running            1          3d12h
+mysql-v1-hh6gn                 1/1     Terminating        1          11d
+mysql-v1-mhj2v                 1/1     Running            1          3d
+mysql-v1-qgt7n                 1/1     Terminating        1          11d
+mysql-v1-sf7jz                 1/1     Terminating        2          11d
+mysql-v1-vp7b9                 1/1     Running            3          11d
+mysql-v1-wwl85                 1/1     Terminating        0          3d12h
+nginx1                         1/1     Running            0          31s
+nginx2                         1/1     Running            0          19s
+nginx3                         1/1     Running            0          15s
+postgresql-gkckt               0/1     Terminating        59         11d
+postgresql-lp8zv               0/1     CrashLoopBackOff   58         3d
+webserver-5bff76c8f7-sfgfm     1/1     Running            5          26d
+[root@ccmas Pod-design]# kubectl get deploy
+NAME          READY   UP-TO-DATE   AVAILABLE   AGE
+hello-world   3/3     3            3           12d
+multitool     1/1     1            1           26d
+webserver     1/1     1            1           26d
+[root@ccmas Pod-design]# kubectl get rc
+NAME         DESIRED   CURRENT   READY   AGE
+mysql-v1     5         5         5       11d
+postgresql   1         1         0       11d
+[root@ccmas Pod-design]#
+
+@@@
+[root@ccmas Pod-design]# kubectl get pods -o wide | grep -i nginx
+nginx1                         1/1     Running            0          4m44s   10.32.0.16   ccmas.example.com     <none>           <none>
+nginx2                         1/1     Running            0          4m32s   10.32.0.17   ccmas.example.com     <none>           <none>
+nginx3                         1/1     Running            0          4m28s   10.32.0.18   ccmas.example.com     <none>           <none>
+nginx4                         1/1     Running            0          31s     10.44.0.1    ccnode1.example.com   <none>           <none>
+nginx5                         1/1     Running            0          26s     10.44.0.2    ccnode1.example.com   <none>           <none>
+[root@ccmas Pod-design]#
+
+@@@
+webserver-5bff76c8f7-sfgfm     1/1     Running            5          26d     pod-template-hash=5bff76c8f7,run=webserver
+[root@ccmas Pod-design]# kubectl get po --show-labels | grep -i nginx
+nginx1                         1/1     Running            0          5m51s   app=v1
+nginx2                         1/1     Running            0          5m39s   app=v1
+nginx3                         1/1     Running            0          5m35s   app=v1
+nginx4                         1/1     Running            0          98s     app=v1
+nginx5                         1/1     Running            0          93s     app=v1
+[root@ccmas Pod-design]#
+
+
+@@@@
+[root@ccmas Pod-design]# kubectl label po nginx2 app=v2 --overwrite
+pod/nginx2 labeled
+[root@ccmas Pod-design]# kubectl get po --show-labels | grep -i nginx
+nginx1                         1/1     Running            0          7m58s   app=v1
+nginx2                         1/1     Running            0          7m46s   app=v2
+nginx3                         1/1     Running            0          7m42s   app=v1
+nginx4                         1/1     Running            0          3m45s   app=v1
+nginx5                         1/1     Running            0          3m40s   app=v1
+[root@ccmas Pod-design]#
+
+@@@
+[root@ccmas Pod-design]# kubectl get po -L app | grep -i nginx
+nginx1                         1/1     Running            0          9m38s   v1
+nginx2                         1/1     Running            0          9m26s   v2
+nginx3                         1/1     Running            0          9m22s   v1
+nginx4                         1/1     Running            0          5m25s   v1
+nginx5                         1/1     Running            0          5m20s   v1
+[root@ccmas Pod-design]# kubectl get po --label-columns=app
+NAME                           READY   STATUS             RESTARTS   AGE     APP
+hello-world-59b45bc5b9-m84qr   1/1     Running            3          12d
+hello-world-59b45bc5b9-mz4b4   1/1     Running            1          3d12h
+hello-world-59b45bc5b9-zsgl7   1/1     Running            1          3d
+multitool-64d55546dc-j7sh7     1/1     Running            4          13d
+mysql-v1-b8x84                 1/1     Running            1          3d      mysql-app
+mysql-v1-bjb4m                 1/1     Running            3          11d     mysql-app
+mysql-v1-hbz9g                 1/1     Running            1          3d12h   mysql-app
+mysql-v1-mhj2v                 1/1     Running            1          3d      mysql-app
+mysql-v1-vp7b9                 1/1     Running            3          11d     mysql-app
+nginx1                         1/1     Running            0          10m     v1
+nginx2                         1/1     Running            0          9m55s   v2
+nginx3                         1/1     Running            0          9m51s   v1
+nginx4                         1/1     Running            0          5m54s   v1
+nginx5                         1/1     Running            0          5m49s   v1
+postgresql-lp8zv               0/1     CrashLoopBackOff   60         3d      mysql-app
+webserver-5bff76c8f7-sfgfm     1/1     Running            5          26d
+[root@ccmas Pod-design]#
+@@@
+root@ccmas Pod-design]# kubectl get po -l app=v2
+NAME     READY   STATUS    RESTARTS   AGE
+nginx2   1/1     Running   0          11m
+[root@ccmas Pod-design]# kubectl get po -l 'app in (v2)'
+NAME     READY   STATUS    RESTARTS   AGE
+nginx2   1/1     Running   0          11m
+[root@ccmas Pod-design]# kubectl get po --selector=app=v2
+NAME     READY   STATUS    RESTARTS   AGE
+nginx2   1/1     Running   0          11m
+[root@ccmas Pod-design]# kubectl describe pod nginx2
+Name:         nginx2
+Namespace:    default
+Priority:     0
+Node:         ccmas.example.com/192.168.0.10
+Start Time:   Sun, 15 Mar 2020 12:02:31 -0400
+Labels:       app=v2
+Annotations:  <none>
+Status:       Running
+IP:           10.32.0.17
+IPs:
+  IP:  10.32.0.17
+Containers:
+  nginx2:
+    Container ID:   docker://622be0f18e239d232c84d489659ffa5d51967fff34bd7b537bd05446ec5b6c7a
+    Image:          nginx
+    Image ID:       docker-pullable://docker.io/nginx@sha256:2539d4344dd18e1df02be842ffc435f8e1f699cfc55516e2cf2cb16b7a9aea0b
+    Port:           <none>
+    Host Port:      <none>
+    State:          Running
+      Started:      Sun, 15 Mar 2020 12:02:33 -0400
+    Ready:          True
+    Restart Count:  0
+    Environment:    <none>
+    Mounts:
+      /var/run/secrets/kubernetes.io/serviceaccount from default-token-96qx6 (ro)
+Conditions:
+  Type              Status
+  Initialized       True
+  Ready             True
+  ContainersReady   True
+  PodScheduled      True
+Volumes:
+  default-token-96qx6:
+    Type:        Secret (a volume populated by a Secret)
+    SecretName:  default-token-96qx6
+    Optional:    false
+QoS Class:       BestEffort
+Node-Selectors:  <none>
+Tolerations:     node.kubernetes.io/not-ready:NoExecute for 300s
+                 node.kubernetes.io/unreachable:NoExecute for 300s
+Events:
+  Type    Reason     Age   From                        Message
+  ----    ------     ----  ----                        -------
+  Normal  Scheduled  11m   default-scheduler           Successfully assigned default/nginx2 to ccmas.example.com
+  Normal  Pulling    11m   kubelet, ccmas.example.com  Pulling image "nginx"
+  Normal  Pulled     11m   kubelet, ccmas.example.com  Successfully pulled image "nginx"
+  Normal  Created    11m   kubelet, ccmas.example.com  Created container nginx2
+  Normal  Started    11m   kubelet, ccmas.example.com  Started container nginx2
+[root@ccmas Pod-design]#
+
+
+@@@
+[root@ccmas Pod-design]# kubectl label po nginx1 nginx2 nginx2 app-
+pod/nginx1 labeled
+pod/nginx2 labeled
+label "app" not found.
+pod/nginx2 labeled
+[root@ccmas Pod-design]# kubectl label po nginx1 nginx2 nginx3 app-
+label "app" not found.
+pod/nginx1 labeled
+label "app" not found.
+pod/nginx2 labeled
+pod/nginx3 labeled
+[root@ccmas Pod-design]# kubectl get po -L app | grep -i nginx
+nginx1                         1/1     Running            0          15m
+nginx2                         1/1     Running            0          15m
+nginx3                         1/1     Running            0          15m
+nginx4                         1/1     Running            0          11m     v1
+nginx5                         1/1     Running            0          11m     v1
+[root@ccmas Pod-design]#
+
+
+@@@@
+[root@ccmas Pod-design]# kubectl label po nginx{4..5} app-
+pod/nginx4 labeled
+pod/nginx5 labeled
+[root@ccmas Pod-design]# kubectl get po -L app | grep -i nginx
+nginx1                         1/1     Running            0          16m
+nginx2                         1/1     Running            0          16m
+nginx3                         1/1     Running            0          16m
+nginx4                         1/1     Running            0          12m
+nginx5                         1/1     Running            0          12m
+[root@ccmas Pod-design]#
+
+
+@@@
+[root@ccmas Pod-design]# kubectl get po -L app | grep -i nginx
+nginx1                         1/1     Running             0          18m
+nginx2                         1/1     Running             0          17m
+nginx3                         1/1     Running             0          17m
+nginx4                         1/1     Running             0          13m
+nginx5                         1/1     Running             0          13m
+nginx7                         1/1     Running             0          17s     v1
+nginx8                         1/1     Running             0          12s     v1
+nginx9                         0/1     ContainerCreating   0          6s      v1
+[root@ccmas Pod-design]# kubectl label po -lapp app-
+pod/mysql-v1-b8x84 labeled
+pod/mysql-v1-bjb4m labeled
+pod/mysql-v1-hbz9g labeled
+pod/mysql-v1-mhj2v labeled
+pod/mysql-v1-vp7b9 labeled
+pod/nginx7 labeled
+pod/nginx8 labeled
+pod/nginx9 labeled
+pod/postgresql-lp8zv labeled
+[root@ccmas Pod-design]# kubectl get po -L app | grep -i nginx
+nginx1                         1/1     Running            0          18m
+nginx2                         1/1     Running            0          18m
+nginx3                         1/1     Running            0          18m
+nginx4                         1/1     Running            0          14m
+nginx5                         1/1     Running            0          14m
+nginx7                         1/1     Running            0          39s
+nginx8                         1/1     Running            0          34s
+nginx9                         1/1     Running            0          28s
+[root@ccmas Pod-design]#
+
+
+[root@ccmas Pod-design]# kubectl label nodes ccnode2.example.com disktype=ssd
+node/ccnode2.example.com labeled
+[root@ccmas Pod-design]# kubectl get nodes --show-labels
+NAME                  STATUS   ROLES    AGE   VERSION   LABELS
+ccmas.example.com     Ready    master   27d   v1.17.0   beta.kubernetes.io/arch=amd64,beta.kubernetes.io/os=linux,kubernetes.io/arch=amd64,kubernetes.io/hostname=ccmas.example.com,kubernetes.io/os=linux,node-role.kubernetes.io/master=
+ccnode1.example.com   Ready    <none>   27d   v1.17.0   beta.kubernetes.io/arch=amd64,beta.kubernetes.io/os=linux,kubernetes.io/arch=amd64,kubernetes.io/hostname=ccnode1.example.com,kubernetes.io/os=linux
+ccnode2.example.com   Ready    <none>   27d   v1.17.0   beta.kubernetes.io/arch=amd64,beta.kubernetes.io/os=linux,disktype=ssd,kubernetes.io/arch=amd64,kubernetes.io/hostname=ccnode2.example.com,kubernetes.io/os=linux
+[root@ccmas Pod-design]#
+
+[root@ccmas Pod-design]# cat node01.yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: cuda-test
+spec:
+  containers:
+  - image: "nginx"
+    name: cuda-test
+  nodeSelector:
+    disktype: ssd
+[root@ccmas Pod-design]#
+
+[root@ccmas Pod-design]# kubectl describe pod cuda-test
+Name:         cuda-test
+Namespace:    default
+Priority:     0
+Node:         ccnode2.example.com/192.168.0.12
+Start Time:   Sun, 15 Mar 2020 13:15:22 -0400
+Labels:       <none>
+Annotations:  <none>
+Status:       Running
+IP:           10.36.0.6
+IPs:
+  IP:  10.36.0.6
+Containers:
+  cuda-test:
+    Container ID:   docker://bb116ae2164490342b25a17e0302733a40e4f359b3b23c1ae921e6f4a7c1e92a
+    Image:          nginx
+    Image ID:       docker-pullable://docker.io/nginx@sha256:2539d4344dd18e1df02be842ffc435f8e1f699cfc55516e2cf2cb16b7a9aea0b
+    Port:           <none>
+    Host Port:      <none>
+    State:          Running
+      Started:      Sun, 15 Mar 2020 13:15:55 -0400
+    Ready:          True
+    Restart Count:  0
+    Environment:    <none>
+    Mounts:
+      /var/run/secrets/kubernetes.io/serviceaccount from default-token-96qx6 (ro)
+Conditions:
+  Type              Status
+  Initialized       True
+  Ready             True
+  ContainersReady   True
+  PodScheduled      True
+Volumes:
+  default-token-96qx6:
+    Type:        Secret (a volume populated by a Secret)
+    SecretName:  default-token-96qx6
+    Optional:    false
+QoS Class:       BestEffort
+Node-Selectors:  disktype=ssd
+Tolerations:     node.kubernetes.io/not-ready:NoExecute for 300s
+                 node.kubernetes.io/unreachable:NoExecute for 300s
+Events:
+  Type     Reason     Age                 From                          Message
+  ----     ------     ----                ----                          -------
+  Normal   Scheduled  113s                default-scheduler             Successfully assigned default/cuda-test to ccnode2.example.com
+  Warning  Failed     97s                 kubelet, ccnode2.example.com  Failed to pull image "nginx": rpc error: code = Unknown desc = Get https://registry-1.docker.io/v2/: net/http: request canceled while waiting for connection (Client.Timeout exceeded while awaiting headers)
+  Warning  Failed     97s                 kubelet, ccnode2.example.com  Error: ErrImagePull
+  Normal   BackOff    97s                 kubelet, ccnode2.example.com  Back-off pulling image "nginx"
+  Warning  Failed     97s                 kubelet, ccnode2.example.com  Error: ImagePullBackOff
+  Normal   Pulling    82s (x2 over 112s)  kubelet, ccnode2.example.com  Pulling image "nginx"
+  Normal   Pulled     80s                 kubelet, ccnode2.example.com  Successfully pulled image "nginx"
+  Normal   Created    80s                 kubelet, ccnode2.example.com  Created container cuda-test
+  Normal   Started    79s                 kubelet, ccnode2.example.com  Started container cuda-test
+[root@ccmas Pod-design]#
+
+
+[root@ccmas Pod-design]# kubectl get pods -o wide
+NAME                           READY   STATUS             RESTARTS   AGE     IP           NODE                  NOMINATED NODE   READINESS GATES
+cuda-test                      1/1     Running            0          2m37s   10.36.0.6    ccnode2.example.com   <none>           <none>
+
+
+
+@@@
+[root@ccmas Pod-design]# kubectl explain rc | more
+KIND:     ReplicationController
+VERSION:  v1
+
+DESCRIPTION:
+     ReplicationController represents the configuration of a replication
+     controller.
+
+
+@@@
+[root@ccmas Pod-design]# kubectl annotate po nginx1 nginx2 nginx3 description='my description'
+pod/nginx1 annotated
+pod/nginx2 annotated
+pod/nginx3 annotated
+[root@ccmas Pod-design]#
+
+
+@@@
+[root@ccmas Pod-design]# kubectl describe po nginx1 | grep -i 'annotations'
+Annotations:  description: my description
+[root@ccmas Pod-design]# kubectl describe pod nginx1
+Name:         nginx1
+Namespace:    default
+Priority:     0
+Node:         ccmas.example.com/192.168.0.10
+Start Time:   Sun, 15 Mar 2020 12:02:19 -0400
+Labels:       <none>
+Annotations:  description: my description
+Status:       Running
+IP:           10.32.0.16
+IPs:
+  IP:  10.32.0.16
+Containers:
+  nginx1:
+    Container ID:   docker://cea379907f2c50114f310c20b7186a441b1cc4229942bb7dba629eb46cfedb3f
+    Image:          nginx
+    Image ID:       docker-pullable://docker.io/nginx@sha256:2539d4344dd18e1df02be842ffc435f8e1f699cfc55516e2cf2cb16b7a9aea0b
+    Port:           <none>
+    Host Port:      <none>
+    State:          Running
+      Started:      Sun, 15 Mar 2020 12:02:26 -0400
+    Ready:          True
+    Restart Count:  0
+    Environment:    <none>
+    Mounts:
+      /var/run/secrets/kubernetes.io/serviceaccount from default-token-96qx6 (ro)
+Conditions:
+  Type              Status
+  Initialized       True
+  Ready             True
+  ContainersReady   True
+  PodScheduled      True
+Volumes:
+  default-token-96qx6:
+    Type:        Secret (a volume populated by a Secret)
+    SecretName:  default-token-96qx6
+    Optional:    false
+QoS Class:       BestEffort
+Node-Selectors:  <none>
+Tolerations:     node.kubernetes.io/not-ready:NoExecute for 300s
+                 node.kubernetes.io/unreachable:NoExecute for 300s
+Events:          <none>
+[root@ccmas Pod-design]#
+
+@@@
+[root@ccmas Pod-design]# kubectl describe po nginx1 | grep -i Annotations
+Annotations:  description: my description
+[root@ccmas Pod-design]#
+
+@@@@
+[root@ccmas Pod-design]# kubectl annotate po nginx{5..9} description='MSA'
+pod/nginx5 annotated
+pod/nginx7 annotated
+pod/nginx8 annotated
+pod/nginx9 annotated
+
+
+[root@ccmas Pod-design]# kubectl describe po  | grep -i Annotations
+Annotations:  <none>
+Annotations:  <none>
+Annotations:  <none>
+Annotations:  <none>
+Annotations:  <none>
+Annotations:  <none>
+Annotations:  <none>
+Annotations:  <none>
+Annotations:  <none>
+Annotations:  <none>
+Annotations:  <none>
+Annotations:  <none>
+Annotations:  <none>
+Annotations:  <none>
+Annotations:  <none>
+Annotations:  description: my description
+Annotations:  description: my description
+Annotations:  description: my description
+Annotations:  <none>
+Annotations:  description: MSA
+Annotations:  description: MSA
+Annotations:  description: MSA
+Annotations:  description: MSA
+Annotations:  <none>
+Annotations:  <none>
+Annotations:  <none>
+
+
+@@@
+[root@ccmas Pod-design]# kubectl annotate po nginx{5..9} description-
+pod/nginx5 annotated
+pod/nginx7 annotated
+pod/nginx8 annotated
+pod/nginx9 annotated
+
+@@@@
+[root@ccmas Pod-design]# kubectl describe po nginx1 | grep -i Annotations
+Annotations:  description: my description
+[root@ccmas Pod-design]# kubectl describe po  | grep -i Annotations
+Annotations:  <none>
+Annotations:  <none>
+Annotations:  <none>
+Annotations:  <none>
+Annotations:  <none>
+Annotations:  <none>
+Annotations:  <none>
+Annotations:  <none>
+Annotations:  <none>
+Annotations:  <none>
+Annotations:  <none>
+Annotations:  <none>
+Annotations:  <none>
+Annotations:  <none>
+Annotations:  <none>
+Annotations:  description: my description
+Annotations:  description: my description
+Annotations:  description: my description
+Annotations:  <none>
+Annotations:  <none>
+Annotations:  <none>
+Annotations:  <none>
+Annotations:  <none>
+Annotations:  <none>
+Annotations:  <none>
+Annotations:  <none>
+[root@ccmas Pod-design]#
+
+@@@
+[root@ccmas Pod-design]# kubectl get pods | grep -i nginx
+nginx1                         1/1     Running            0          88m
+nginx2                         1/1     Running            0          87m
+nginx3                         1/1     Running            0          87m
+nginx4                         1/1     Running            0          83m
+nginx5                         1/1     Running            0          83m
+nginx7                         1/1     Running            0          70m
+nginx8                         1/1     Running            0          70m
+nginx9                         1/1     Running            0          70m
+[root@ccmas Pod-design]# kubectl describe po nginx1 | grep -i Annotations^C
+[root@ccmas Pod-design]# kubectl delete po nginx{1..9}
+pod "nginx1" deleted
+pod "nginx2" deleted
+pod "nginx3" deleted
+pod "nginx4" deleted
+pod "nginx5" deleted
+pod "nginx7" deleted
+pod "nginx8" deleted
+pod "nginx9" deleted
+
+
